@@ -1,9 +1,13 @@
 <template>
-	<h1>This is the summary page</h1>
+  <SummaryList />
 </template>
 
 <script>
-export default {};
+import SummaryList from "../components/Summaries/SummaryList";
+export default {
+  name: "Summaries",
+  components: { SummaryList }
+};
 </script>
 
 <style></style>
