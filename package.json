@@ -1,0 +1,16 @@
+{
+	"name": "timi",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"client": "cd client && npm run serve",
+		"server": "cd server && npm start",
+		"start": "concurrently - k \"npm run server\" \"npm run client\""
+	},
+	"author": "Johan Guzman",
+	"license": "ISC",
+	"dependencies": {
+		"concurrently": "^5.2.0"
+	}
+}
