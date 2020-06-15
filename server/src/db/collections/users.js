@@ -1,16 +1,19 @@
 const { User } = require('../models');
+const bcrypt = require('bcryptjs');
 
-const createNewUser = ({ name, email, password, date }) =>
+const createNewUser = async ({ name, email, password }) => {
+	//Encrypt password
+	let encryptedPassword = await bcrypt.hash(password, 10);
 	new User({
 		name,
 		email,
-		password,
-		date: Date.parse(date),
+		password: encryptedPassword,
 	})
 		.save()
 		.then(() => {})
-        .catch((error) => error);
-        
+		.catch((error) => error);
+};
+
 module.exports = {
 	createNewUser,
 };

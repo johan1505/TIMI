@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const passportSetUp = require('./passportSetUp');
 const passport = require('passport');
 const cookieSession = require('cookie-session');
+const morgan = require('morgan');
 require('dotenv').config();
 
 // Imports routers
@@ -16,6 +17,7 @@ const usersRouter = require('./routes/users');
 // Set up app
 const app = express();
 app.use(cors());
+app.use(morgan('dev'));
 app.use(
 	cookieSession({
 		// Day in milliseconds

@@ -59,10 +59,6 @@ const userSchema = new Schema({
 		max: 1024,
 		min: 6,
 	},
-	date: {
-		type: Date,
-		default: Date.now,
-	},
 });
 
 const Summary = mongoose.model('Summary', summarySchema);
