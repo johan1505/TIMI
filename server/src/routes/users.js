@@ -7,14 +7,15 @@ const {
 
 router.post('/register', async (req, res) => {
 	const validationResponse = await validateRegisterUser(req.body);
+	
 	if (!validationResponse.isValid) {
 		res.status(400).send(validationResponse.errorMessage);
 	} else {
 		// console.log(req.body);
-		const { name, email, password } = req.body;
+		const { username, email, password } = req.body;
 		try {
 			// Encrypt password using bcrypt
-			await createNewUser({ name, email, password });
+			await createNewUser({ username, email, password });
 			res.status(200).json('User successfully created');
 		} catch (error) {
 			res.status(400).json('Some error occurred. User was not created');

@@ -43,7 +43,7 @@ const summarySchema = new Schema({
 
 // User schema
 const userSchema = new Schema({
-	name: {
+	username: {
 		type: String,
 		required: true,
 	},

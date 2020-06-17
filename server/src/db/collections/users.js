@@ -1,11 +1,11 @@
 const { User } = require('../models');
 const bcrypt = require('bcryptjs');
 
-const createNewUser = async ({ name, email, password }) => {
+const createNewUser = async ({ username, email, password }) => {
 	//Encrypt password
 	let encryptedPassword = await bcrypt.hash(password, 10);
 	new User({
-		name,
+		username,
 		email,
 		password: encryptedPassword,
 	})
@@ -14,6 +14,12 @@ const createNewUser = async ({ name, email, password }) => {
 		.catch((error) => error);
 };
 
+const findUserByUserName = async ({ username }) =>
+	User.findOne({ username })
+		.then((user) => user)
+		.catch((error) => error);
+
 module.exports = {
 	createNewUser,
+	findUserByUserName,
 };
