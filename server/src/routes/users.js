@@ -1,6 +1,9 @@
 const router = require('express').Router();
 const { createNewUser } = require('../db/collections/users');
-const { validateRegisterUser } = require('../lib/Validators');
+const {
+	validateRegisterUser,
+	validateLoginUser,
+} = require('../lib/Validation/Validators');
 
 router.post('/register', async (req, res) => {
 	const validationResponse = await validateRegisterUser(req.body);
@@ -19,6 +22,14 @@ router.post('/register', async (req, res) => {
 	}
 });
 
+router.post('/login', async (req, res) => {
+	const validationResponse = await validateLoginUser(req.body);
+	if (!validationResponse.isValid) {
+		res.status(400).send(validationResponse.errorMessage);
+	} else {
+		res.status(200).send('User logged in');
+	}
+});
 // For the login route, use passport local strategy to authenticate a username and password. Look at c2c login route
 
 module.exports = router;
