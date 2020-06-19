@@ -4,7 +4,6 @@ const { User } = require('../../db/models');
 const { registerSchema } = require('./Schemas');
 const bcrypt = require('bcryptjs');
 
-// Fix. As long as any of the validation steps is not valid. Return
 const validateRegisterUser = async (userInformation) => {
 	// Check if user information matches the validation schema
 	const { error } = registerSchema.validate(userInformation);
@@ -36,7 +35,12 @@ const validateRegisterUser = async (userInformation) => {
 	};
 };
 
+const isOwner = (userId, document) => {
+	return userId.equals(document.user);
+};
+
 module.exports = {
 	validateRegisterUser,
 	verifyPassword: bcrypt.compare,
+	isOwner,
 };

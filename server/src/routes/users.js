@@ -12,9 +12,9 @@ router.post('/register', async (req, res) => {
 		const { username, email, password } = req.body;
 		try {
 			await createNewUser({ username, email, password });
-			res.status(200).send('User successfully created');
+			res.status(200).json({ success: true });
 		} catch (error) {
-			res.status(400).send('Some error occurred. User was not created');
+			res.status(400).json({ success: false });
 		}
 	}
 });
@@ -29,9 +29,9 @@ router.post(
 				process.env.JWT_SECRET,
 				{}
 			);
-			res.status(200).send({ jwt: token });
+			res.status(200).json({ jwt: token });
 		} catch (e) {
-			res.status(400).send(e);
+			res.status(400).json(e);
 		}
 	}
 );

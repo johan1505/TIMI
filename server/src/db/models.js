@@ -1,26 +1,26 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-// Event schema
-const eventSchema = new Schema({
-	title: {
-		type: String,
-		required: true,
-		trim: true,
-	},
+// // Event schema
+// const eventSchema = new Schema({
+// 	title: {
+// 		type: String,
+// 		required: true,
+// 		trim: true,
+// 	},
 
-	startTime: {
-		type: Date,
-		default: Date.now,
-		required: true,
-	},
+// 	startTime: {
+// 		type: Date,
+// 		default: Date.now,
+// 		required: true,
+// 	},
 
-	endTime: {
-		type: Date,
-		default: Date.now,
-		required: true,
-	},
-});
+// 	endTime: {
+// 		type: Date,
+// 		default: Date.now,
+// 		required: true,
+// 	},
+// });
 
 // Summary schema
 const summarySchema = new Schema({
@@ -38,7 +38,7 @@ const summarySchema = new Schema({
 		default: Date.now,
 		required: true,
 	},
-	events: [{ type: Schema.Types.ObjectId, ref: 'Event' }],
+	events: [{ type: Object }],
 });
 
 // User schema
@@ -62,7 +62,7 @@ const userSchema = new Schema({
 });
 
 const Summary = mongoose.model('Summary', summarySchema);
-const Event = mongoose.model('Event', eventSchema);
+// const Event = mongoose.model('Event', eventSchema);
 const User = mongoose.model('User', userSchema);
 
-module.exports = { Event, Summary, User };
+module.exports = { Summary, User };
