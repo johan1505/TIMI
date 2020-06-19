@@ -9,14 +9,19 @@ const {
 } = require('../db/collections/summaries');
 
 // TO DO: Add some type of user validation
-router.get('/', async (req, res) => {
-	try {
-		const summaries = await findSummaries();
-		res.status(200).json(summaries);
-	} catch (error) {
-		res.status(400).json(error);
+router.get(
+	'/',
+	passport.authenticate('jwt', { session: false }),
+	async (req, res) => {
+		try {
+			console.log(req.user);
+			const summaries = await findSummaries();
+			res.status(200).json(summaries);
+		} catch (error) {
+			res.status(400).json(error);
+		}
 	}
-});
+);
 // Adds a new summary
 router.route('/add').post(async (req, res) => {
 	const { user, startDate, endDate, events } = req.body;
