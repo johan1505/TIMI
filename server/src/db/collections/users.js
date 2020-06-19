@@ -19,7 +19,13 @@ const findUserByUserName = async ({ username }) =>
 		.then((user) => user)
 		.catch((error) => error);
 
+const findUserById = async (id) =>
+	User.findById(id)
+		.then((user) => user)
+		.catch((error) => error);
+
 module.exports = {
 	createNewUser,
 	findUserByUserName,
+	findUserById,
 };

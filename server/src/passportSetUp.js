@@ -1,13 +1,56 @@
 const passport = require('passport');
 //const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
-const User = require('./db/models').User;
-const { google } = require('googleapis');
-
+// const { google } = require('googleapis');
+const LocalStrategy = require('passport-local').Strategy;
+const { ExtractJwt } = require('passport-jwt');
+const JWTStrategy = require('passport-jwt').Strategy;
+const { findUserByUserName, findUserById } = require('./db/collections/users');
+const { verifyPassword } = require('./lib/Validation/Validators');
 require('dotenv').config();
 
+passport.use(
+	'login',
+	new LocalStrategy(async (username, password, done) => {
+		try {
+			// Check if username exists
+			const user = await findUserByUserName({ username });
+			if (!user) {
+				return done(null, false);
+			}
 
+			// Check if passwords match
+			const isPasswordValid = await verifyPassword(password, user.password);
+			if (!isPasswordValid) {
+				return done(null, false);
+			}
 
+			return done(null, user);
+		} catch (e) {
+			return done(e);
+		}
+	})
+);
 
+passport.use(
+	'jwt',
+	new JWTStrategy(
+		{
+			secretOrKey: process.env.JWT_SECRET,
+			jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+		},
+		async (jwtPayload, done) => {
+			try {
+				const user = await findUserById(jwtPayload._id);
+				if (!user) {
+					return done(null, false);
+				}
+				return done(null, user);
+			} catch (e) {
+				return done(e);
+			}
+		}
+	)
+);
 // // Helper Passport functions
 
 // // Serialize user by grabbing the id from the user object

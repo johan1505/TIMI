@@ -4,7 +4,6 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const passportSetUp = require('./passportSetUp');
 const passport = require('passport');
-const cookieSession = require('cookie-session');
 const morgan = require('morgan');
 require('dotenv').config();
 
@@ -18,19 +17,11 @@ const usersRouter = require('./routes/users');
 const app = express();
 app.use(cors());
 app.use(morgan('dev'));
-app.use(
-	cookieSession({
-		// Day in milliseconds
-		maxAge: 24 * 60 * 60 * 1000,
-		keys: [process.env.COOKIE_KEY],
-	})
-);
-app.use(express.json());
-const port = process.env.PORT || 5000;
-
 //initialize passport
 app.use(passport.initialize());
-app.use(passport.session());
+app.use(express.json());
+
+const port = process.env.PORT || 5000;
 
 // Mongo db connection
 const uri = process.env.ATLAS_URI;
