@@ -1,11 +1,18 @@
 const passport = require('passport');
-//const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
-// const { google } = require('googleapis');
+const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+const GoogleTokenStrategy = require('passport-google-token').Strategy;
+const { google } = require('googleapis');
 const LocalStrategy = require('passport-local').Strategy;
 const { ExtractJwt } = require('passport-jwt');
 const JWTStrategy = require('passport-jwt').Strategy;
-const { findUserByUserName, findUserById } = require('./db/collections/users');
+const {
+	findUserByUserName,
+	findUserById,
+	findByGoogleId,
+	createGoogleUser,
+} = require('./db/collections/users');
 const { verifyPassword } = require('./lib/Validation/Validators');
+const { User } = require('./db/models');
 require('dotenv').config();
 
 passport.use(
@@ -51,97 +58,70 @@ passport.use(
 		}
 	)
 );
-// // Helper Passport functions
 
-// // Serialize user by grabbing the id from the user object
-// passport.serializeUser((user, done) => {
-// 	done(null, user.id);
-// });
+// This passport strategy will only be used to create a summary using data from user's google calendar account
 
-// // Deserialize user id by grabbing the corresponding user from the db
-// passport.deserializeUser((id, done) => {
-// 	User.findById(id)
-// 		.then((user) => {
-// 			done(null, user);
-// 		})
-// 		.catch((error) => {
-// 			console.log('Error deserializing user:' + error);
-// 		});
-// });
+passport.serializeUser(function (user, done) {
+	done(null, user);
+});
 
-// // Sets up passport
-// passport.use(
-// 	new GoogleStrategy(
-// 		{
-// 			clientID: process.env.GOOGLE_CLIENT_ID,
-// 			clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-// 			callbackURL: 'http://localhost:5000/auth/google/callback',
-// 		},
-// 		(accessToken, refreshToken, profile, done) => {
-// 			console.log('ACCESS TOKEN: ' + accessToken);
+passport.deserializeUser(function (user, done) {
+	done(null, user);
+});
 
-// 			const oAuthClient = new google.auth.OAuth2(
-// 				process.env.GOOGLE_CLIENT_ID,
-// 				process.env.GOOGLE_CLIENT_SECRET,
-// 				'http://localhost:5000/auth/google/callback'
-// 			);
-// 			oAuthClient.setCredentials({
-// 				access_token: accessToken,
-// 			});
+passport.use(
+	new GoogleStrategy(
+		{
+			clientID: process.env.GOOGLE_CLIENT_ID,
+			clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+			callbackURL: 'http://localhost:5000/auth/google/callback',
+		},
+		async (accessToken, refreshToken, profile, done) => {
+			// console.log('Access token: ', accessToken);
+			try {
+				// console.log(profile);
+				const googleId = profile.id;
+				const user = await findByGoogleId({ googleId });
+				// console.log(`User found: ${user}`);
+				if (user) {
+					const returnUser = {
+						...user._doc,
+						accessToken,
+					};
+					// console.log(returnUser);
+					done(null, returnUser);
+				} else {
+					const name = profile.displayName;
+					const newUser = await createGoogleUser({ name, googleId });
+					const returnUser = {
+						...newUser._doc,
+						accessToken,
+					};
+					// console.log(returnUser);
+					done(null, returnUser);
+				}
+			} catch (error) {
+				done(null, false);
+			}
+		}
+	)
+);
 
-// 			console.log(oAuthClient);
-
-// 			const calendar = google.calendar({
-// 				version: 'v3',
-// 				auth: oAuthClient,
-// 			});
-
-// 			calendar.events.list(
-// 				{
-// 					calendarId: 'primary',
-// 					timeMin: new Date().toISOString(),
-// 					maxResults: 10,
-// 					singleEvents: true,
-// 					orderBy: 'startTime',
-// 				},
-// 				(err, res) => {
-// 					if (err) {
-// 						console.log(err);
-// 						return;
-// 					}
-// 					const events = res.data.items;
-// 					if (events.length) {
-// 						console.log('Upcoming 10 events:');
-// 						events.map((event, i) => {
-// 							const start = event.start.dateTime || event.start.date;
-// 							console.log(`${start} - ${event.summary}`);
-// 						});
-// 					} else {
-// 						console.log('No upcoming events found.');
-// 					}
-// 				}
-// 			);
-
-// 			console.log('Profile: ');
-// 			console.log(profile);
-
-// 			User.findOne({ googleId: profile.id }).then((currentUser) => {
-// 				if (currentUser) {
-// 					console.log('USER FOUND: ' + currentUser);
-// 					done(null, currentUser);
-// 				} else {
-// 					new User({
-// 						name: profile.displayName,
-// 						googleId: profile.id,
-// 						thumbnail: profile.photos[0].value,
-// 					})
-// 						.save()
-// 						.then((newUser) => {
-// 							console.log('NEW USER: ' + newUser);
-// 							done(null, newUser);
-// 						});
-// 				}
-// 			});
-// 		}
-// 	)
-// );
+passport.use(
+	new GoogleTokenStrategy(
+		{
+			clientID: process.env.GOOGLE_CLIENT_ID,
+			clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+		},
+		async (accessToken, refreshToken, profile, done) => {
+			try {
+				const user = await findByGoogleId({ googleId: profile.id });
+				if (user) {
+					done(null, user);
+				}
+			} catch (error) {
+				done(null, false);
+			}
+		}
+	)
+);

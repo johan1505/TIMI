@@ -61,8 +61,19 @@ const userSchema = new Schema({
 	},
 });
 
+const userGoogle = new Schema({
+	name: {
+		type: String,
+		required: true,
+	},
+	googleId: {
+		type: String,
+		required: true,
+	},
+});
 const Summary = mongoose.model('Summary', summarySchema);
 // const Event = mongoose.model('Event', eventSchema);
+const UserGoogle = mongoose.model('UserGoogle', userGoogle);
 const User = mongoose.model('User', userSchema);
 
-module.exports = { Summary, User };
+module.exports = { Summary, User, UserGoogle };
