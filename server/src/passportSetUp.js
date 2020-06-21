@@ -1,7 +1,6 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 const GoogleTokenStrategy = require('passport-google-token').Strategy;
-const { google } = require('googleapis');
 const LocalStrategy = require('passport-local').Strategy;
 const { ExtractJwt } = require('passport-jwt');
 const JWTStrategy = require('passport-jwt').Strategy;
@@ -59,7 +58,7 @@ passport.use(
 	)
 );
 
-// This passport strategy will only be used to create a summary using data from user's google calendar account
+// This strategy used to create/login users using Google accounts
 
 passport.serializeUser(function (user, done) {
 	done(null, user);
@@ -77,27 +76,24 @@ passport.use(
 			callbackURL: 'http://localhost:5000/auth/google/callback',
 		},
 		async (accessToken, refreshToken, profile, done) => {
-			// console.log('Access token: ', accessToken);
+			console.log(accessToken);
 			try {
-				// console.log(profile);
-				const googleId = profile.id;
-				const user = await findByGoogleId({ googleId });
-				// console.log(`User found: ${user}`);
+				const user = await findByGoogleId({ googleId: profile.id });
 				if (user) {
 					const returnUser = {
 						...user._doc,
 						accessToken,
 					};
-					// console.log(returnUser);
 					done(null, returnUser);
 				} else {
-					const name = profile.displayName;
-					const newUser = await createGoogleUser({ name, googleId });
+					const newUser = await createGoogleUser({
+						name: profile.displayName,
+						googleId,
+					});
 					const returnUser = {
 						...newUser._doc,
 						accessToken,
 					};
-					// console.log(returnUser);
 					done(null, returnUser);
 				}
 			} catch (error) {
@@ -107,6 +103,7 @@ passport.use(
 	)
 );
 
+// This strategy used to authenticate endpoints using access token provided by google
 passport.use(
 	new GoogleTokenStrategy(
 		{

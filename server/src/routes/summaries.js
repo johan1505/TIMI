@@ -7,84 +7,78 @@ const {
 	deleteSummary,
 	updateSummary,
 } = require('../db/collections/summaries');
-
 const { isOwner } = require('../lib/Validation/Validators');
+const { getEvents } = require('../lib/googleCalendar');
 
-router.get(
-	'/',
-	passport.authenticate('jwt', { session: false }),
-	async (req, res) => {
-		try {
-			const userId = req.user._id;
-			const summaries = await findSummaries({ userId });
-			res.status(200).json({ success: true, summaries });
-		} catch (error) {
-			console.log(error);
-			res.status(400).json({
-				success: false,
-				message: 'Some error occurred, please try again',
-			});
-		}
-	}
-);
-// Adds a new summary
-router.post(
-	'/add',
-	passport.authenticate('jwt', { session: false }),
-	async (req, res) => {
+router.get('/', passport.authenticate('google-token'), async (req, res) => {
+	console.log(req.user);
+	try {
 		const userId = req.user._id;
-		const { startDate, endDate, events } = req.body;
-		try {
-			await createNewSummary({ userId, startDate, endDate, events });
-			res
-				.status(200)
-				.json({ success: true, message: 'Summary successfully created' });
-		} catch (error) {
-			console.log(error);
-			res.status(400).json({
-				success: false,
-				message: 'Some error occurred, please try again',
-			});
-		}
+		const summaries = await findSummaries({ userId });
+		res.status(200).json({ success: true, summaries });
+	} catch (error) {
+		console.log(error);
+		res.status(400).json({
+			success: false,
+			message: 'Some error occurred, please try again',
+		});
 	}
-);
+});
+
+// Adds a new summary
+router.post('/add', passport.authenticate('google-token'), async (req, res) => {
+	try {
+		const events = await getEvents(null, null, req.headers.access_token);
+		const { startDate, endDate } = req.body;
+		await createNewSummary({
+			userId: req.user._id,
+			startDate,
+			endDate,
+			events,
+		});
+		res
+			.status(200)
+			.json({ success: true, message: 'Summary successfully created' });
+		res.status(200).json(summaryEvents);
+	} catch (error) {
+		console.log(error);
+		res.status(400).json({
+			success: false,
+			message: 'Some error occurred, please try again',
+		});
+	}
+});
 
 // Finds a specific summary
-router.get(
-	'/:id',
-	passport.authenticate('jwt', { session: false }),
-	async (req, res) => {
+router.get('/:id', passport.authenticate('google-token'), async (req, res) => {
+	try {
 		const { id } = req.params;
-		try {
-			const userId = req.user._id;
-			const summary = await findSummariesById({ id });
-			if (isOwner(userId, summary)) {
-				res.status(200).json({ success: true, summary });
-			} else {
-				res.status(400).json({
-					success: false,
-					message: 'User is not owner of the summary',
-				});
-			}
-		} catch (error) {
-			console.log(error);
+		const summary = await findSummariesById({ id });
+		if (isOwner(req.user._id, summary)) {
+			res.status(200).json({ success: true, summary });
+		} else {
 			res.status(400).json({
 				success: false,
-				message: 'Some error occurred, please try again',
+				message: 'User is not owner of the summary',
 			});
 		}
+	} catch (error) {
+		console.log(error);
+		res.status(400).json({
+			success: false,
+			message: 'Some error occurred, please try again',
+		});
 	}
-);
+});
 
 // Deletes a specific summary
 router.post(
 	'/delete',
-	passport.authenticate('jwt', { session: false }),
+	passport.authenticate('google-token'),
 	async (req, res) => {
 		try {
-			const userId = req.user._id;
 			const { summary } = req.body;
-			if (isOwner(userId, summary)) {
+			if (isOwner(req.user._id, summary)) {
 				await deleteSummary(summary._id);
 				res.status(200).json({ success: true, message: 'Summary deleted!' });
 			} else {
@@ -105,12 +99,11 @@ router.post(
 
 router.post(
 	'/update',
-	passport.authenticate('jwt', { session: false }),
+	passport.authenticate('google-token'),
 	async (req, res) => {
-		const userId = req.user._id;
 		const { summary } = req.body;
 		try {
-			if (isOwner(userId, summary)) {
+			if (isOwner(req.user._id, summary)) {
 				await updateSummary(
 					summary._id,
 					summary.startDate,
