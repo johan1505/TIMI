@@ -1,3 +1,5 @@
+// TODO: DELETE THIS FILE
+
 const { Event } = require('../models');
 
 const findEvents = () =>

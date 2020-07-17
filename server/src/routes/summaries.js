@@ -15,10 +15,10 @@ router.get('/', passport.authenticate('google-token'), async (req, res) => {
 	try {
 		const userId = req.user._id;
 		const summaries = await findSummaries({ userId });
-		res.status(200).json({ success: true, summaries });
+		res.status(200).send({ success: true, summaries });
 	} catch (error) {
 		console.log(error);
-		res.status(400).json({
+		res.status(400).send({
 			success: false,
 			message: 'Some error occurred, please try again',
 		});
@@ -28,8 +28,13 @@ router.get('/', passport.authenticate('google-token'), async (req, res) => {
 // Adds a new summary
 router.post('/add', passport.authenticate('google-token'), async (req, res) => {
 	try {
-		const events = await getEvents(null, null, req.headers.access_token);
 		const { startDate, endDate } = req.body;
+		const events = await getEvents(
+			startDate,
+			endDate,
+			req.headers.access_token
+		);
+		
 		await createNewSummary({
 			userId: req.user._id,
 			startDate,
@@ -38,11 +43,10 @@ router.post('/add', passport.authenticate('google-token'), async (req, res) => {
 		});
 		res
 			.status(200)
-			.json({ success: true, message: 'Summary successfully created' });
-		res.status(200).json(summaryEvents);
+			.send({ success: true, message: 'Summary successfully created' });
 	} catch (error) {
 		console.log(error);
-		res.status(400).json({
+		res.status(400).send({
 			success: false,
 			message: 'Some error occurred, please try again',
 		});
@@ -55,16 +59,16 @@ router.get('/:id', passport.authenticate('google-token'), async (req, res) => {
 		const { id } = req.params;
 		const summary = await findSummariesById({ id });
 		if (isOwner(req.user._id, summary)) {
-			res.status(200).json({ success: true, summary });
+			res.status(200).send({ success: true, summary });
 		} else {
-			res.status(400).json({
+			res.status(400).send({
 				success: false,
 				message: 'User is not owner of the summary',
 			});
 		}
 	} catch (error) {
 		console.log(error);
-		res.status(400).json({
+		res.status(400).send({
 			success: false,
 			message: 'Some error occurred, please try again',
 		});
@@ -80,16 +84,16 @@ router.post(
 			const { summary } = req.body;
 			if (isOwner(req.user._id, summary)) {
 				await deleteSummary(summary._id);
-				res.status(200).json({ success: true, message: 'Summary deleted!' });
+				res.status(200).send({ success: true, message: 'Summary deleted!' });
 			} else {
-				res.status(400).json({
+				res.status(400).send({
 					success: false,
 					message: 'User is not owner of the summary',
 				});
 			}
 		} catch (error) {
 			console.log(error);
-			res.status(400).json({
+			res.status(400).send({
 				success: false,
 				message: 'Some error occurred, please try again',
 			});
@@ -110,16 +114,16 @@ router.post(
 					summary.endDate,
 					summary.events
 				);
-				res.status(200).json({ success: true, message: 'Summary updated' });
+				res.status(200).send({ success: true, message: 'Summary updated' });
 			} else {
-				res.status(400).json({
+				res.status(400).send({
 					success: false,
 					message: 'User is not owner of the summary',
 				});
 			}
 		} catch (error) {
 			console.log(error);
-			res.status(400).json({
+			res.status(400).send({
 				success: false,
 				message: 'Some error occurred, please try again',
 			});

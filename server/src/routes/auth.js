@@ -1,7 +1,6 @@
 const router = require('express').Router();
 const passport = require('passport');
 
-// authentication router
 router.get(
 	'/google',
 	passport.authenticate('google', {
@@ -9,12 +8,6 @@ router.get(
 	})
 );
 
-router.get('/test', passport.authenticate('google-token'), (req, res) => {
-	res.status(200).send({
-		user: req.user,
-		msg: 'Hello',
-	});
-});
 // Returns user info
 router.get(
 	'/google/callback',

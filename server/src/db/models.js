@@ -42,24 +42,24 @@ const summarySchema = new Schema({
 });
 
 // User schema
-const userSchema = new Schema({
-	username: {
-		type: String,
-		required: true,
-	},
-	email: {
-		type: String,
-		required: true,
-		max: 155,
-		min: 6,
-	},
-	password: {
-		type: String,
-		required: true,
-		max: 1024,
-		min: 6,
-	},
-});
+// const userSchema = new Schema({
+// 	username: {
+// 		type: String,
+// 		required: true,
+// 	},
+// 	email: {
+// 		type: String,
+// 		required: true,
+// 		max: 155,
+// 		min: 6,
+// 	},
+// 	password: {
+// 		type: String,
+// 		required: true,
+// 		max: 1024,
+// 		min: 6,
+// 	},
+// });
 
 const userGoogle = new Schema({
 	name: {
@@ -74,6 +74,6 @@ const userGoogle = new Schema({
 const Summary = mongoose.model('Summary', summarySchema);
 // const Event = mongoose.model('Event', eventSchema);
 const UserGoogle = mongoose.model('UserGoogle', userGoogle);
-const User = mongoose.model('User', userSchema);
+// const User = mongoose.model('User', userSchema);
 
-module.exports = { Summary, User, UserGoogle };
+module.exports = { Summary, UserGoogle };

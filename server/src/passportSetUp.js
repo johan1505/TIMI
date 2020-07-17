@@ -1,62 +1,62 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 const GoogleTokenStrategy = require('passport-google-token').Strategy;
-const LocalStrategy = require('passport-local').Strategy;
-const { ExtractJwt } = require('passport-jwt');
-const JWTStrategy = require('passport-jwt').Strategy;
+// const LocalStrategy = require('passport-local').Strategy;
+// const { ExtractJwt } = require('passport-jwt');
+// const JWTStrategy = require('passport-jwt').Strategy;
 const {
-	findUserByUserName,
-	findUserById,
+	//findUserByUserName,
+	//findUserById,
 	findByGoogleId,
 	createGoogleUser,
 } = require('./db/collections/users');
-const { verifyPassword } = require('./lib/Validation/Validators');
-const { User } = require('./db/models');
+// const { verifyPassword } = require('./lib/Validation/Validators');
+// const { User } = require('./db/models');
 require('dotenv').config();
 
-passport.use(
-	'login',
-	new LocalStrategy(async (username, password, done) => {
-		try {
-			// Check if username exists
-			const user = await findUserByUserName({ username });
-			if (!user) {
-				return done(null, false);
-			}
+// passport.use(
+// 	'login',
+// 	new LocalStrategy(async (username, password, done) => {
+// 		try {
+// 			// Check if username exists
+// 			const user = await findUserByUserName({ username });
+// 			if (!user) {
+// 				return done(null, false);
+// 			}
 
-			// Check if passwords match
-			const isPasswordValid = await verifyPassword(password, user.password);
-			if (!isPasswordValid) {
-				return done(null, false);
-			}
+// 			// Check if passwords match
+// 			const isPasswordValid = await verifyPassword(password, user.password);
+// 			if (!isPasswordValid) {
+// 				return done(null, false);
+// 			}
 
-			return done(null, user);
-		} catch (e) {
-			return done(e);
-		}
-	})
-);
+// 			return done(null, user);
+// 		} catch (e) {
+// 			return done(e);
+// 		}
+// 	})
+// );
 
-passport.use(
-	'jwt',
-	new JWTStrategy(
-		{
-			secretOrKey: process.env.JWT_SECRET,
-			jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-		},
-		async (jwtPayload, done) => {
-			try {
-				const user = await findUserById(jwtPayload._id);
-				if (!user) {
-					return done(null, false);
-				}
-				return done(null, user);
-			} catch (e) {
-				return done(e);
-			}
-		}
-	)
-);
+// passport.use(
+// 	'jwt',
+// 	new JWTStrategy(
+// 		{
+// 			secretOrKey: process.env.JWT_SECRET,
+// 			jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+// 		},
+// 		async (jwtPayload, done) => {
+// 			try {
+// 				const user = await findUserById(jwtPayload._id);
+// 				if (!user) {
+// 					return done(null, false);
+// 				}
+// 				return done(null, user);
+// 			} catch (e) {
+// 				return done(e);
+// 			}
+// 		}
+// 	)
+// );
 
 // This strategy used to create/login users using Google accounts
 
@@ -76,14 +76,18 @@ passport.use(
 			callbackURL: 'http://localhost:5000/auth/google/callback',
 		},
 		async (accessToken, refreshToken, profile, done) => {
+			console.log('heeere');
 			console.log(accessToken);
+
+			const googleId = profile.id;
 			try {
-				const user = await findByGoogleId({ googleId: profile.id });
+				const user = await findByGoogleId({ googleId });
 				if (user) {
 					const returnUser = {
 						...user._doc,
 						accessToken,
 					};
+					console.log(returnUser);
 					done(null, returnUser);
 				} else {
 					const newUser = await createGoogleUser({
@@ -94,9 +98,11 @@ passport.use(
 						...newUser._doc,
 						accessToken,
 					};
+					console.log(returnUser);
 					done(null, returnUser);
 				}
 			} catch (error) {
+				console.log(error);
 				done(null, false);
 			}
 		}

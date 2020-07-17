@@ -1,3 +1,4 @@
+// TODO: DELETE THIS FILE AND ITS DIRECTORY
 const jwt = require('jsonwebtoken');
 
 const signJWT = async (target, secret, options = {}) => {

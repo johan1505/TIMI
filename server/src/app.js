@@ -1,3 +1,5 @@
+// TODO: DELETE COMMENTED OUT CODE
+
 // Import of packages
 const express = require('express');
 const cors = require('cors');
@@ -8,10 +10,10 @@ const morgan = require('morgan');
 require('dotenv').config();
 
 // Imports routers
-const eventRouter = require('./routes/events');
+// const eventRouter = require('./routes/events');
 const summaryRouter = require('./routes/summaries');
 const authRouter = require('./routes/auth');
-const usersRouter = require('./routes/users');
+// const usersRouter = require('./routes/users');
 
 // Set up app
 const app = express();
@@ -33,10 +35,10 @@ connection.once('open', () => {
 });
 
 // Routes
-app.use('/events', eventRouter);
+// app.use('/events', eventRouter);
 app.use('/summaries', summaryRouter);
 app.use('/auth', authRouter);
-app.use('/users', usersRouter);
+// app.use('/users', usersRouter);
 
 // Start server
 app.listen(port, () => {
